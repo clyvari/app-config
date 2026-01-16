@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -eu
 
 SCRIPT_DIR="$(cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" && pwd)"
@@ -43,9 +42,17 @@ if [[ -z "${APPCFG_PKGSRC:+u}" ]]; then
 fi
 
 APP="${1:?The APP argument is missing}"; shift
+
+FINAL_ARG="${1:-}"; shift || true
+
+if [[ ! -z "${FINAL_ARG:+u}" ]]; then
+  APPCFG_PKGSRC="${APP}"
+  APP="${FINAL_ARG}"
+fi
+
 APPDIR="${APPCFG_PKGSRC}/${APP}"
 if [[ ! -d "${APPDIR}"  ]]; then
-  error "Application ${APP} not found in \`$(pwd)/${APPCFG_PKGSRC}\`"
+  error "Application ${APP} not found in \`${APPCFG_PKGSRC}\`"
   exit 1
 fi
 
@@ -72,6 +79,7 @@ function install_pkg(){
     fi
     mkdir -p "${INSTALL_DIR}"
     info "Stowing content of ${app} to ${INSTALL_DIR}"
+    info "Current dir: $(pwd)"
     stow . \
         --dir="${pkgdir}" \
         --target="${INSTALL_DIR}" \
@@ -82,11 +90,11 @@ function install_pkg(){
   fi
 }
 
-pushd "${APPDIR}" >/dev/null
 
 export PATH="${PATH}:${SCRIPTS}"
 
 if [[ ! -z "${MULTI_TARGET:+u}" ]]; then
+  pushd "${APPDIR}" >/dev/null
   info "App \`${APP}\` has multiple candidates"
   for c in *; do
     if [[ ! -f "${c}/.condition.sh" ]] || "${c}/.condition.sh"; then
@@ -105,33 +113,9 @@ if [[ ! -z "${MULTI_TARGET:+u}" ]]; then
     error "No candidate found"
     exit 1
   fi
+  popd >/dev/null
 else
   install_pkg "${APP}" "${APPDIR}"
 fi
-
-
-
-
-# popd >/dev/null
-# if [[ -f "${APPDIR}/.install.sh" ]]; then
-#   pushd "${APPDIR}" >/dev/null
-#   info "Installing using install script"
-#   "./.install.sh"
-#   popd >/dev/null
-# else
-#   if [[ -z "${INSTALL_DIR}" ]]; then
-#     error "\$INSTALL_DIR can't be empty"
-#     exit 1
-#   fi
-#   mkdir -p "${INSTALL_DIR}"
-#   info "Stowing content of ${APP} to ${INSTALL_DIR}"
-#   stow . \
-#        --dir="${APPDIR}" \
-#        --target="${INSTALL_DIR}" \
-#        --stow \
-#        --ignore='\.((install|condition).sh|env)' \
-#        --dotfiles \
-#        --adopt
-# fi
 
 info "DONE"

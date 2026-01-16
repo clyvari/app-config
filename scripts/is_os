@@ -1,0 +1,13 @@
+#!/bin/bash
+set -eu
+
+OS_ID="${1}"; shift
+OS_VERSION="${1}"; shift
+
+[[ ! -f /etc/os-release ]] && exit 1
+. /etc/os-release
+
+[[ "${ID}" != "${OS_ID}" ]] && exit 1
+[[ "${VERSION_ID}" != "${OS_VERSION}" ]] && exit 1
+
+exit 0

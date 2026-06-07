@@ -35,6 +35,34 @@ EOF
   exit 0
 fi
 
+case "${1}" in
+  help|--help|-h)
+    cat <<'EOF'
+This script either install itself or another app.
+
+To install itself:
+  `INSTALL_DIR=dir ./install.sh` without any argument
+
+To install an other app:
+  `INSTALL_DIR=dir APPCFG_PKGSRC=pkgsrc ./install.sh app`
+   or by passing the package source as an argument: `INSTALL_DIR=dir ./install.sh pkgsrc app`
+
+where:
+  - `pkgsrc` is the directory holding the app packages
+  - `app`    is the package to install (a sub-directory of `pkgsrc`)
+
+Notes:
+  - `INSTALL_DIR` is the target the package is stowed into; it is
+    required unless the package ships its own `.install.sh`.
+  - Positional arguments take precedence over `APPCFG_PKGSRC`, so
+    `./install.sh pkgsrc app` works whether or not the variable is set.
+  - If the resolved package directory contains multiple candidates,
+    set `MULTI_TARGET` to select among them via their `.condition.sh`.
+EOF
+  exit 0
+  ;;
+esac
+
 SCRIPTS="$(realpath "${SCRIPT_DIR}/scripts")"
 
 if [[ -z "${APPCFG_PKGSRC:+u}" ]]; then

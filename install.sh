@@ -66,7 +66,7 @@ fi
 function install_pkg(){
   local app="${1}"; shift
   local pkgdir="${1}"; shift
-  
+
   if [[ -f "${pkgdir}/.install.sh" ]]; then
     pushd "${pkgdir}" >/dev/null
     info "Installing using install script"
@@ -84,6 +84,7 @@ function install_pkg(){
         --dir="${pkgdir}" \
         --target="${INSTALL_DIR}" \
         --stow \
+        "$([[ "${NO_FOLDING}" == "y" ]] && echo "--no-folding")" \
         --ignore='\.((install|condition).sh|env)' \
         --dotfiles \
         --adopt
